@@ -89,11 +89,17 @@ const AboutUs = () => {
                 <p>Functionality meets aesthetic appeal in every product</p>
               </div>
             </div>
-            
+{/*             
             <div className="about-cta">
               <button className="learn-more-btn">Our Story</button>
               <button className="browse-products-btn">Browse Products</button>
-            </div>
+            </div> */}
+            <div className="about-cta">
+  {/* <button className="learn-more-btn">Our Story</button> */}
+  <a href="#services">
+    <button className="browse-products-btn">Browse Products</button>
+  </a>
+</div>
           </div>
         </div>
         
