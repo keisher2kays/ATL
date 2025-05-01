@@ -1,5 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
+import emailjs from '@emailjs/browser';
 import products from './productdatabase'; // Adjust the path as necessary
 
 const Services = () => {
@@ -11,6 +11,8 @@ const Services = () => {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [orderComplete, setOrderComplete] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [emailError, setEmailError] = useState(null);
   const [customerInfo, setCustomerInfo] = useState({
     name: '',
     email: '',
@@ -20,6 +22,9 @@ const Services = () => {
   });
 
   useEffect(() => {
+    // Initialize EmailJS
+    emailjs.init("u2piV_KgwGirgwhzN");
+    
     const servicesTimer = setTimeout(() => {
       setShowServicesContent(true);
     }, 800);
@@ -83,15 +88,77 @@ const Services = () => {
     setCustomerInfo({...customerInfo, [name]: value});
   };
 
-  const handleSubmitOrder = (e) => {
+  const prepareOrderDetails = () => {
+    // Create a nicely formatted order summary for the email
+    const cartItemsList = cart.map(item => 
+      `${item.name} - $${item.price.toFixed(2)} x ${item.quantity} = $${(item.price * item.quantity).toFixed(2)}`
+    ).join('\n');
+
+    return `
+Order Details:
+--------------
+${cartItemsList}
+
+Total: $${calculateTotal().toFixed(2)}
+
+Customer Information:
+-------------------
+Name: ${customerInfo.name}
+Email: ${customerInfo.email}
+Phone: ${customerInfo.phone}
+Delivery Address: ${customerInfo.address}
+Payment Method: ${customerInfo.paymentMethod === 'ecocash' ? 'EcoCash' : 'Cash on Delivery'}
+`;
+  };
+
+  const handleSubmitOrder = async (e) => {
     e.preventDefault();
-    console.log("Order submitted:", {
-      customerInfo,
-      items: cart,
-      total: calculateTotal()
-    });
-    setOrderComplete(true);
-    setCart([]);
+    setIsSubmitting(true);
+    setEmailError(null);
+    
+    // Prepare the email parameters
+    const orderDetails = prepareOrderDetails();
+    
+    // Important: The parameter names must match EXACTLY what your EmailJS template expects
+    // Common EmailJS template parameters include:
+    // - user_name, user_email, message, etc.
+    // Check your EmailJS template to ensure these match
+    const templateParams = {
+      from_name: customerInfo.name,
+      reply_to: customerInfo.email,    // This is typically required by EmailJS
+      to_name: 'Store Owner',
+      user_email: customerInfo.email,  // Common EmailJS parameter
+      email: customerInfo.email,       // Try alternative parameter name
+      phone: customerInfo.phone,
+      address: customerInfo.address,
+      payment_method: customerInfo.paymentMethod === 'ecocash' ? 'EcoCash' : 'Cash on Delivery',
+      message: orderDetails,
+      total: `${calculateTotal().toFixed(2)}`
+    };
+
+    // Log the parameters to help debug
+    console.log("Sending email with parameters:", templateParams);
+
+    try {
+      // Send the email using EmailJS
+      const response = await emailjs.send(
+        'service_714vlgl',
+        'template_pz4eflo',
+        templateParams,
+        'u2piV_KgwGirgwhzN'
+      );
+      
+      console.log("Email sent successfully:", response);
+      
+      setOrderComplete(true);
+      setCart([]);
+    } catch (error) {
+      console.error('Failed to send email:', error);
+      // More detailed error message
+      setEmailError(`Failed to send your order. Error: ${error.text || error.message || 'Unknown error'}`);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const filteredProducts = products.filter(product => {
@@ -118,7 +185,7 @@ const Services = () => {
             setShowCart(true);
             // Allow background scrolling when cart modal is opened
           }}>
-            🛒 {cart.length > 0 && <span className="cart-count">{cart.length  }</span>}
+            🛒 {cart.length > 0 && <span className="cart-count">{cart.length}</span>}
           </button>
         </div>
         
@@ -301,59 +368,71 @@ const Services = () => {
                     <h4>Order Total: ${calculateTotal().toFixed(2)}</h4>
                   </div>
                   {!orderComplete ? (
-                    <form className="checkout-form" onSubmit={handleSubmitOrder}>
-                      <h4>Shipping Information</h4>
-                      <div className="form-group">
-                        <label>Full Name</label>
+                    <form className="order-checkout-form" onSubmit={handleSubmitOrder}>
+                      <h4 className="order-form-title">Shipping Information</h4>
+                      {emailError && <div className="email-error-message">{emailError}</div>}
+                      <div className="order-input-group">
+                        <label className="order-input-label">Full Name</label>
                         <input 
                           type="text" 
                           name="name" 
                           value={customerInfo.name} 
                           onChange={handleCustomerInfoChange}
                           required 
+                          className="order-input-field"
                         />
                       </div>
-                      <div className="form-group">
-                        <label>Email</label>
+                      <div className="order-input-group">
+                        <label className="order-input-label">Email</label>
                         <input 
                           type="email" 
                           name="email" 
                           value={customerInfo.email} 
                           onChange={handleCustomerInfoChange}
                           required 
+                          className="order-input-field"
                         />
                       </div>
-                      <div className="form-group">
-                        <label>Phone</label>
+                      <div className="order-input-group">
+                        <label className="order-input-label">Phone</label>
                         <input 
                           type="tel" 
                           name="phone" 
                           value={customerInfo.phone} 
                           onChange={handleCustomerInfoChange}
                           required 
+                          className="order-input-field"
                         />
                       </div>
-                      <div className="form-group">
-                        <label>Delivery Address</label>
+                      <div className="order-input-group">
+                        <label className="order-input-label">Delivery Address</label>
                         <textarea 
                           name="address" 
                           value={customerInfo.address} 
                           onChange={handleCustomerInfoChange}
                           required 
+                          className="order-textarea-field"
                         />
                       </div>
-                      <div className="form-group">
-                        <label>Payment Method</label>
+                      <div className="order-input-group">
+                        <label className="order-input-label">Payment Method</label>
                         <select 
                           name="paymentMethod" 
                           value={customerInfo.paymentMethod} 
                           onChange={handleCustomerInfoChange}
+                          className="order-select-field"
                         >
                           <option value="ecocash">EcoCash</option>
                           <option value="cash">Cash on Delivery</option>
                         </select>
                       </div>
-                      <button type="submit" className="checkout-btn">Complete Order</button>
+                      <button 
+                        type="submit" 
+                        className="order-submit-button"
+                        disabled={isSubmitting}
+                      >
+                        {isSubmitting ? 'Processing...' : 'Complete Order'}
+                      </button>
                     </form>
                   ) : (
                     <div className="order-complete">
