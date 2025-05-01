@@ -133,6 +133,7 @@ Payment Method: ${customerInfo.paymentMethod === 'ecocash' ? 'EcoCash' : 'Cash o
       address: customerInfo.address,
       payment_method: customerInfo.paymentMethod === 'ecocash' ? 'EcoCash' : 'Cash on Delivery',
       message: orderDetails,
+      to_email: 'katererekeisher4@gmail.com'  ,
       total: `${calculateTotal().toFixed(2)}`
     };
 
@@ -142,7 +143,7 @@ Payment Method: ${customerInfo.paymentMethod === 'ecocash' ? 'EcoCash' : 'Cash o
     try {
       // Send the email using EmailJS
       const response = await emailjs.send(
-        'service_714vlgl',
+        'service_1oshs8o',
         'template_pz4eflo',
         templateParams,
         'u2piV_KgwGirgwhzN'
