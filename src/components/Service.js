@@ -111,57 +111,177 @@ Payment Method: ${customerInfo.paymentMethod === 'ecocash' ? 'EcoCash' : 'Cash o
 `;
   };
 
+  // const handleSubmitOrder = async (e) => {
+  //   e.preventDefault();
+  //   setIsSubmitting(true);
+  //   setEmailError(null);
+    
+  //   // Prepare the email parameters
+  //   const orderDetails = prepareOrderDetails();
+    
+  //   // Important: The parameter names must match EXACTLY what your EmailJS template expects
+  //   // Common EmailJS template parameters include:
+  //   // - user_name, user_email, message, etc.
+  //   // Check your EmailJS template to ensure these match
+  //   const templateParams = {
+  //     from_name: customerInfo.name,
+  //     reply_to: customerInfo.email,    // This is typically required by EmailJS
+  //     to_name: 'Store Owner',
+  //     user_email: customerInfo.email,  // Common EmailJS parameter
+  //     email: customerInfo.email,       // Try alternative parameter name
+  //     phone: customerInfo.phone,
+  //     address: customerInfo.address,
+  //     payment_method: customerInfo.paymentMethod === 'ecocash' ? 'EcoCash' : 'Cash on Delivery',
+  //     message: orderDetails,
+  //     to_email: 'katererekeisher4@gmail.com'  ,
+  //     total: `${calculateTotal().toFixed(2)}`
+  //   };
+
+  //   // Log the parameters to help debug
+  //   console.log("Sending email with parameters:", templateParams);
+
+  //   try {
+  //     // Send the email using EmailJS
+  //     const response = await emailjs.send(
+  //       'service_1oshs8o',
+  //       'template_pz4eflo',
+  //       templateParams,
+  //       'u2piV_KgwGirgwhzN'
+  //     );
+      
+  //     console.log("Email sent successfully:", response);
+      
+  //     setOrderComplete(true);
+  //     setCart([]);
+  //   } catch (error) {
+  //     console.error('Failed to send email:', error);
+  //     // More detailed error message
+  //     setEmailError(`Failed to send your order. Error: ${error.text || error.message || 'Unknown error'}`);
+  //   } finally {
+  //     setIsSubmitting(false);
+  //   }
+  // };
+  // const handleSubmitOrder = async (e) => {
+  //   e.preventDefault();
+  //   setIsSubmitting(true);
+  //   setEmailError(null);
+    
+  //   // Generate a simple order ID
+  //   const orderId = `ORD-${Date.now().toString().slice(-6)}`;
+    
+  //   // Prepare the email parameters
+  //   const orderDetails = prepareOrderDetails();
+    
+  //   // Common parameters for both emails
+  //   const commonParams = {
+  //     from_name: customerInfo.name,
+  //     reply_to: customerInfo.email,
+  //     phone: customerInfo.phone,
+  //     address: customerInfo.address,
+  //     payment_method: customerInfo.paymentMethod === 'ecocash' ? 'EcoCash' : 'Cash on Delivery',
+  //     message: orderDetails,
+  //     total: `${calculateTotal().toFixed(2)}`,
+  //     order_id: orderId
+  //   };
+  
+  //   try {
+  //     // 1. Send notification to company
+  //     const companyResponse = await emailjs.send(
+  //       'service_1oshs8o',
+  //       'template_jyoadcd', // Use your actual template ID here
+  //       commonParams,
+  //       'u2piV_KgwGirgwhzN'
+  //     );
+      
+  //     console.log("Company notification sent:", companyResponse);
+      
+  //     // 2. Send confirmation to customer
+  //     const customerResponse = await emailjs.send(
+  //       'service_714vlgl',
+  //       'template_pz4eflo', // Use your actual template ID here
+  //       commonParams,
+  //       'u2piV_KgwGirgwhzN'
+  //     );
+      
+  //     console.log("Customer confirmation sent:", customerResponse);
+      
+  //     // Show order complete message and reset cart
+  //     setOrderComplete(true);
+  //     setCart([]);
+  //   } catch (error) {
+  //     console.error('Failed to send email:', error);
+  //     setEmailError(`Failed to send your order. Error: ${error.text || error.message || 'Unknown error'}`);
+  //   } finally {
+  //     setIsSubmitting(false);
+  //   }
+  // };
+
   const handleSubmitOrder = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
     setEmailError(null);
     
+    // Generate a simple order ID
+    const orderId = `ORD-${Date.now().toString().slice(-6)}`;
+    
     // Prepare the email parameters
     const orderDetails = prepareOrderDetails();
     
-    // Important: The parameter names must match EXACTLY what your EmailJS template expects
-    // Common EmailJS template parameters include:
-    // - user_name, user_email, message, etc.
-    // Check your EmailJS template to ensure these match
-    const templateParams = {
-      from_name: customerInfo.name,
-      reply_to: customerInfo.email,    // This is typically required by EmailJS
-      to_name: 'Store Owner',
-      user_email: customerInfo.email,  // Common EmailJS parameter
-      email: customerInfo.email,       // Try alternative parameter name
-      phone: customerInfo.phone,
-      address: customerInfo.address,
-      payment_method: customerInfo.paymentMethod === 'ecocash' ? 'EcoCash' : 'Cash on Delivery',
-      message: orderDetails,
-      to_email: 'katererekeisher4@gmail.com'  ,
-      total: `${calculateTotal().toFixed(2)}`
-    };
-
-    // Log the parameters to help debug
-    console.log("Sending email with parameters:", templateParams);
-
     try {
-      // Send the email using EmailJS
-      const response = await emailjs.send(
+      // Remove the check for window.emailjs
+      
+      // 1. Send notification to company
+      const companyResponse = await emailjs.send(
         'service_1oshs8o',
-        'template_pz4eflo',
-        templateParams,
+        'template_jyoadcd',
+        {
+          from_name: customerInfo.name,
+          reply_to: customerInfo.email,
+          phone: customerInfo.phone,
+          address: customerInfo.address,
+          payment_method: customerInfo.paymentMethod === 'ecocash' ? 'EcoCash' : 'Cash on Delivery',
+          message: orderDetails,
+          total: `${calculateTotal().toFixed(2)}`,
+          order_id: orderId,
+          // Add explicit recipient for company notification
+          to_email: "your-company-email@example.com" // Replace with actual company email
+        },
         'u2piV_KgwGirgwhzN'
       );
       
-      console.log("Email sent successfully:", response);
+      console.log("Company notification sent:", companyResponse);
       
+      // 2. Send confirmation to customer
+      const customerResponse = await emailjs.send(
+        'service_1oshs8o',
+        'template_pz4eflo',
+        {
+          from_name: customerInfo.name,
+          reply_to: customerInfo.email,
+          phone: customerInfo.phone,
+          address: customerInfo.address,
+          payment_method: customerInfo.paymentMethod === 'ecocash' ? 'EcoCash' : 'Cash on Delivery',
+          message: orderDetails,
+          total: `${calculateTotal().toFixed(2)}`,
+          order_id: orderId,
+          // Add explicit recipient for customer confirmation
+          to_email: customerInfo.email
+        }, 
+        'u2piV_KgwGirgwhzN'
+      );
+      
+      console.log("Customer confirmation sent:", customerResponse);
+      
+      // Show order complete message and reset cart
       setOrderComplete(true);
       setCart([]);
     } catch (error) {
       console.error('Failed to send email:', error);
-      // More detailed error message
       setEmailError(`Failed to send your order. Error: ${error.text || error.message || 'Unknown error'}`);
     } finally {
       setIsSubmitting(false);
     }
   };
-
   const filteredProducts = products.filter(product => {
     const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory;
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
